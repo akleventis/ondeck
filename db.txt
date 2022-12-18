@@ -1,0 +1,25 @@
+peoples_t
+    - phone primary
+    - name
+    - total
+
+queue_t
+    - phone primary
+    - order number
+    - drink
+    - comments
+
+orders_t
+    - order number primary
+    - phone 
+    - drink
+
+drinks_t
+    - drink primary
+    - price
+
+getPerson
+getDrink
+getQueue
+getOrders
+getDrinks

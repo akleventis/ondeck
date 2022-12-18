@@ -1,0 +1,73 @@
+Person {
+    name
+    number
+}
+
+Drink {
+    name
+    price
+}
+
+Order {
+    Person
+    order number
+    Drink
+}
+
+OrderNumber int
+Queue map[OrderNumber]Order 
+
+post /person
+FE:
+    - name 
+    - number
+BE:
+    handler()=> {
+        if exists update name
+        create person object
+        add person to peoples_t
+        return OK
+    }
+
+get /orders
+BE: 
+    handler() => {
+        []Order
+        return all orders 
+    }
+
+get /queue 
+BE:
+    handler() => {
+        get queue 
+        get drink
+        get person
+        return Queue map
+    }
+
+post /order
+FE:
+    - number
+    - drink array
+BE:
+    handler()=> {
+        get person by phone
+        create person object
+        create recepit array
+        loop through drinks
+            insert drink into db with auto incr number?
+                - queue_t & orders_t
+            receive order number
+            create recipt obect 
+            add to Order array
+        return Order array?
+    }
+
+delete /order 
+FE:
+    - order number
+BE: 
+    handler() => {
+        delete order from queue_t
+        return 
+    }
