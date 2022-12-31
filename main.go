@@ -7,6 +7,7 @@ import (
 	"github.com/akleventis/ondeck/db"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
@@ -19,7 +20,7 @@ type server struct {
 func main() {
 	port := ":8080"
 
-	if err := godotenv.Load("./env"); err != nil {
+	if err := godotenv.Load("./.env"); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 

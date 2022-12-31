@@ -37,5 +37,71 @@ func Open() (*DB, error) {
 		db,
 	}
 
+	if err := odDB.createPersonsTable(); err != nil {
+		return nil, err
+	}
+	if err := odDB.createDrinksTable(); err != nil {
+		return nil, err
+	}
+	if err := odDB.createOrdersTable(); err != nil {
+		return nil, err
+	}
+
 	return odDB, nil
+}
+
+// ondeck=# \d persons_t;
+// Table "public.persons_t"
+//  Column |         Type          | Collation | Nullable |                Default
+// --------+-----------------------+-----------+----------+---------------------------------------
+//  id     | integer               |           | not null | nextval('persons_t_id_seq'::regclass)
+//  phone  | character varying(10) |           |          |
+//  name   | character varying(50) |           |          |
+func (db *DB) createPersonsTable() error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS persons_t (
+		id serial primary key,
+		phone varchar(10),
+		name varchar(50)
+	  )`); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ondeck=# \d drinks_t;
+//  Table "public.drinks_t"
+//  Column |         Type          | Collation | Nullable | Default
+// --------+-----------------------+-----------+----------+---------
+//  name   | character varying(50) |           | not null |
+//  price  | integer               |           |          |
+func (db *DB) createDrinksTable() error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS drinks_t (
+		name varchar(50) primary key,
+		price integer
+	  )`); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ondeck=# \d orders_t
+// Table "public.orders_t"
+// Column    |  Type   | Collation | Nullable |                    Default
+// --------------+---------+-----------+----------+------------------------------------------------
+// order_number | integer |           | not null | nextval('orders_t_order_number_seq'::regclass)
+// person_id    | integer |           |          |
+// drinks       | json    |           |          |
+// Indexes:
+// "orders_t_pkey" PRIMARY KEY, btree (order_number)
+// Foreign-key constraints:
+// "orders_t_person_id_fkey" FOREIGN KEY (person_id) REFERENCES persons_t(id)
+func (db *DB) createOrdersTable() error {
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS orders_t (
+		order_number serial primary key,
+		person_id integer references persons_t(id),
+		drinks json
+	  )`); err != nil {
+		return err
+	}
+	return nil
 }
