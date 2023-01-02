@@ -37,7 +37,26 @@ func main() {
 
 	s.router.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
-	})
+	}).Methods("GET")
+
+	h := NewHandler(s.db)
+	s.router.HandleFunc("/person", h.CreatePerson()).Methods("POST")
+	s.router.HandleFunc("/person/{id}", h.RetrievePerson()).Methods("GET")
+	s.router.HandleFunc("/person/{id}", h.UpdatePerson()).Methods("PATCH")
+	s.router.HandleFunc("/person/{id}", h.RemovePerson()).Methods("DELETE")
+
+	s.router.HandleFunc("/drinks", h.RetrieveDrinks()).Methods("GET")
+	s.router.HandleFunc("/drink", h.CreateDrink()).Methods("POST")
+	s.router.HandleFunc("/drink/{name}", h.RetrieveDrink()).Methods("GET")
+	s.router.HandleFunc("/drink/{name}", h.UpdateDrink()).Methods("PATCH")
+	s.router.HandleFunc("/drink/{name}", h.RemoveDrink()).Methods("DELETE")
+
+	s.router.HandleFunc("/order", h.CreateOrder()).Methods("POST")
+	s.router.HandleFunc("/order/{order_number}", h.RemoveOrder()).Methods("DELETE")
+
+	s.router.HandleFunc("/orders/{person_id}", h.RetrieveOrders()).Methods("GET")
+
+	s.router.HandleFunc("/queue", h.RetrieveQueue()).Methods("GET")
 
 	handler := cors.Default().Handler(s.router)
 

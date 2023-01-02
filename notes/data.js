@@ -1,5 +1,5 @@
 // Concern: Sending phone number over http may be privacy risk
-// Solution: Assign an ID to each person && use as primary key throughout 
+// Solution: Assign an ID to each person && use as primary key throughout
 // POST /person && GET /person/{id}
 const personResponse = {
   id: 123,
@@ -48,26 +48,24 @@ const queueResponse = {
 };
 
 // POST /order
-const orderResponse = [
-  {
-    person: {
-      id: 123,
-      name: "Tanner",
-      phone: "1111111111",
-    },
-    drinks: [
-      {
-        name: "Gin and Tonic",
-        price: 10,
-      },
-      {
-        name: "Taquila Soda",
-        price: 10,
-      },
-    ],
-    order_number: 2,
+const orderResponse = {
+  person: {
+    id: 123,
+    name: "Tanner",
+    phone: "1111111111",
   },
-];
+  drinks: [
+    {
+      name: "Gin and Tonic",
+      price: 10,
+    },
+    {
+      name: "Taquila Soda",
+      price: 10,
+    },
+  ],
+  order_number: 2,
+};
 
 // GET /orders/{person_id}
 const personOrderResponse = [
@@ -107,12 +105,9 @@ const personOrderResponse = [
     ],
     order_number: 5,
   },
-]
-
-
+];
 
 // --------------------------- //
-
 
 // Since we really only care about the queue, this call seems unnecessary
 // GET /orders

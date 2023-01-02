@@ -1,18 +1,15 @@
-Person {
-    name
-    number
-}
-
 Drink {
-    name
-    price
+  name
+  comments
 }
 
-Order {
-    Person
-    order number
-    Drink
+Drinks {
+ []Drink
 }
+
+\l => show databases
+\d {table_name} => show table definition
+
 
 OrderNumber int
 Queue map[OrderNumber]Order 
@@ -51,7 +48,7 @@ FE:
     - drink array
 BE:
     handler()=> {
-        get person by phone
+        get person by id
         create person object
         create recepit array
         loop through drinks
