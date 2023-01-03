@@ -39,8 +39,9 @@ type FullOrder struct {
 }
 
 type QueueObject struct {
-	Person Person `json:"person"`
-	Drinks Drinks `json:"drinks"`
+	Person      Person `json:"person"`
+	Drinks      Drinks `json:"drinks"`
+	OrderNumber int    `json:"order_number"`
 }
 type QueueResponse struct {
 	Queue map[int]QueueObject `json:"queue"`
@@ -247,6 +248,7 @@ func (db *DB) RetrieveQueue() (*QueueResponse, error) {
 		}
 		q.Person.Name = p.Name
 		q.Person.Phone = p.Phone
+		q.OrderNumber = orderNumber
 
 		queue[orderNumber] = q
 	}
