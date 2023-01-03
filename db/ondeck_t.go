@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strconv"
 )
 
 type Person struct {
@@ -38,8 +39,8 @@ type FullOrder struct {
 }
 
 type QueueObject struct {
-	Person Person  `json:"person"`
-	Drinks []Drink `json:"drinks"`
+	Person Person `json:"person"`
+	Drinks Drinks `json:"drinks"`
 }
 type QueueResponse struct {
 	Queue map[int]QueueObject `json:"queue"`
@@ -83,6 +84,27 @@ func (db *DB) RemovePerson(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (db *DB) RetrievePersons() ([]Person, error) {
+	persons := make([]Person, 0)
+	query := `SELECT id, name, phone FROM persons_t;`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		person := Person{}
+		if err := rows.Scan(&person.ID, &person.Name, &person.Phone); err != nil {
+			return nil, err
+		}
+		persons = append(persons, person)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return persons, nil
 }
 
 // Drinks
@@ -203,7 +225,37 @@ func (db *DB) RetrieveOrders(personID string) ([]FullOrder, error) {
 
 // Queue
 func (db *DB) RetrieveQueue() (*QueueResponse, error) {
-	return nil, nil
+	var queueResp QueueResponse
+	queue := make(map[int]QueueObject, 0)
+	query := `SELECT order_number, person_id, drinks from orders_t;`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		q := QueueObject{}
+		var orderNumber int
+		if err := rows.Scan(&orderNumber, &q.Person.ID, &q.Drinks); err != nil {
+			return nil, err
+		}
+		personID := strconv.Itoa(q.Person.ID)
+
+		p, err := db.RetrievePerson(personID)
+		if err != nil {
+			return nil, err
+		}
+		q.Person.Name = p.Name
+		q.Person.Phone = p.Phone
+
+		queue[orderNumber] = q
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	queueResp.Queue = queue
+	return &queueResp, nil
 }
 
 func (d *Drinks) Scan(src interface{}) error {

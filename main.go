@@ -44,6 +44,7 @@ func main() {
 	s.router.HandleFunc("/person/{id}", h.RetrievePerson()).Methods("GET")
 	s.router.HandleFunc("/person/{id}", h.UpdatePerson()).Methods("PATCH")
 	s.router.HandleFunc("/person/{id}", h.RemovePerson()).Methods("DELETE")
+	s.router.HandleFunc("/persons", h.RetrievePersons()).Methods("GET")
 
 	s.router.HandleFunc("/drinks", h.RetrieveDrinks()).Methods("GET")
 	s.router.HandleFunc("/drink", h.CreateDrink()).Methods("POST")

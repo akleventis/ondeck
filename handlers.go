@@ -45,7 +45,7 @@ func (h *Handler) CreatePerson() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, p)
+		apiResponse(w, http.StatusOK, p)
 	}
 }
 
@@ -69,7 +69,7 @@ func (h *Handler) RetrievePerson() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, p)
+		apiResponse(w, http.StatusOK, p)
 	}
 }
 
@@ -115,7 +115,7 @@ func (h *Handler) UpdatePerson() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, resPerson)
+		apiResponse(w, http.StatusOK, resPerson)
 	}
 }
 
@@ -132,7 +132,20 @@ func (h *Handler) RemovePerson() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 		apiResponse(w, http.StatusGone, http.StatusText(410))
+	}
+}
+
+func (h *Handler) RetrievePersons() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		p, err := h.db.RetrievePersons()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, http.StatusOK, p)
 	}
 }
 
@@ -143,7 +156,7 @@ func (h *Handler) RetrieveDrinks() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		apiResponse(w, 200, drinks)
+		apiResponse(w, http.StatusOK, drinks)
 	}
 }
 
@@ -161,7 +174,7 @@ func (h *Handler) CreateDrink() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, resDrink)
+		apiResponse(w, http.StatusOK, resDrink)
 	}
 }
 
@@ -184,7 +197,7 @@ func (h *Handler) RetrieveDrink() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, resDrink)
+		apiResponse(w, http.StatusOK, resDrink)
 	}
 }
 
@@ -230,7 +243,7 @@ func (h *Handler) UpdateDrink() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, resDrink)
+		apiResponse(w, http.StatusOK, resDrink)
 	}
 }
 
@@ -311,7 +324,7 @@ func (h *Handler) CreateOrder() http.HandlerFunc {
 			return
 		}
 
-		apiResponse(w, 200, resOrder)
+		apiResponse(w, http.StatusOK, resOrder)
 	}
 }
 
@@ -352,12 +365,18 @@ func (h *Handler) RetrieveOrders() http.HandlerFunc {
 			apiResponse(w, http.StatusNotFound, http.StatusText(404))
 		}
 
-		apiResponse(w, 200, orders)
+		apiResponse(w, http.StatusOK, orders)
 	}
 }
 
 func (h *Handler) RetrieveQueue() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		queue, err := h.db.RetrieveQueue()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
+		apiResponse(w, http.StatusOK, queue)
 	}
 }
