@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/akleventis/ondeck/db"
 	"github.com/akleventis/ondeck/lib"
@@ -55,7 +56,20 @@ func (h *Handler) RetrievePerson() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// id := vars["id"]
+		id := vars["id"]
+
+		p, err := h.db.RetrievePerson(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if p == nil {
+			apiResponse(w, http.StatusNotFound, lib.ErrPersonNotFound)
+			return
+		}
+
+		apiResponse(w, 200, p)
 	}
 }
 
@@ -66,10 +80,42 @@ func (h *Handler) UpdatePerson() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// id := vars["id"]
-		// get person to update
-		// decode body
-		// update
+		id := vars["id"]
+
+		p, err := h.db.RetrievePerson(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if p == nil {
+			apiResponse(w, http.StatusNotFound, lib.ErrPersonNotFound)
+			return
+		}
+
+		updatedPerson := &db.Person{
+			ID: p.ID,
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&updatedPerson); err != nil {
+			http.Error(w, lib.ErrInvalidArgJSONBody.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if updatedPerson.Name == "" {
+			updatedPerson.Name = p.Name
+		}
+		if updatedPerson.Phone == 0 {
+			updatedPerson.Phone = p.Phone
+		}
+
+		resPerson, err := h.db.UpdatePerson(updatedPerson)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, 200, resPerson)
 	}
 }
 
@@ -80,25 +126,42 @@ func (h *Handler) RemovePerson() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// id := vars["id"]
-		// db delete by id
+		id := vars["id"]
+
+		if err := h.db.RemovePerson(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		apiResponse(w, http.StatusGone, http.StatusText(410))
 	}
 }
 
 func (h *Handler) RetrieveDrinks() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// return all drinks stored in db
+		drinks, err := h.db.RetrieveDrinks()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		apiResponse(w, 200, drinks)
 	}
 }
 
 func (h *Handler) CreateDrink() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var d db.Drink
+		var d *db.Drink
 		if err := json.NewDecoder(r.Body).Decode(&d); err != nil {
 			http.Error(w, lib.ErrInvalidArgJSONBody.Error(), http.StatusBadRequest)
 			return
 		}
-		// create drink
+
+		resDrink, err := h.db.CreateDrink(d)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, 200, resDrink)
 	}
 }
 
@@ -109,8 +172,19 @@ func (h *Handler) RetrieveDrink() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// drink := vars["name"]
-		// retrieve drink by name
+		id := vars["id"]
+
+		resDrink, err := h.db.RetrieveDrink(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if resDrink == nil {
+			apiResponse(w, http.StatusNotFound, lib.ErrDrinkNotFound)
+			return
+		}
+
+		apiResponse(w, 200, resDrink)
 	}
 }
 
@@ -121,10 +195,42 @@ func (h *Handler) UpdateDrink() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// drink := vars["name"]
-		// get drink to update
-		// decode body
-		// update
+		id := vars["id"]
+
+		d, err := h.db.RetrieveDrink(id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if d == nil {
+			apiResponse(w, http.StatusNotFound, lib.ErrDrinkNotFound)
+			return
+		}
+
+		updatedDrink := &db.Drink{
+			ID: d.ID,
+		}
+
+		if err := json.NewDecoder(r.Body).Decode(&updatedDrink); err != nil {
+			http.Error(w, lib.ErrInvalidArgJSONBody.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if updatedDrink.Name == "" {
+			updatedDrink.Name = d.Name
+		}
+
+		if updatedDrink.Price == 0 {
+			updatedDrink.Price = d.Price
+		}
+
+		resDrink, err := h.db.UpdateDrink(updatedDrink)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, 200, resDrink)
 	}
 }
 
@@ -135,21 +241,77 @@ func (h *Handler) RemoveDrink() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// drink := vars["name"]
-		// remove from db
+		id := vars["id"]
+
+		if err := h.db.RemoveDrink(id); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, http.StatusGone, http.StatusText(410))
 	}
 }
 
 func (h *Handler) CreateOrder() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		if vars == nil {
+			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
+			return
+		}
+		pID := vars["person_id"]
+
+		p, err := h.db.RetrievePerson(pID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if p == nil {
+			apiResponse(w, http.StatusNotFound, lib.ErrPersonNotFound)
+			return
+		}
+
 		var o db.Order
 		if err := json.NewDecoder(r.Body).Decode(&o); err != nil {
 			http.Error(w, lib.ErrInvalidArgJSONBody.Error(), http.StatusBadRequest)
 			return
 		}
-		// retrieve person by id
-		// create Order
-		// retrieve serial "order number", append to Order obj and return
+
+		drinks := make([]db.DrinkOrder, 0)
+		for _, v := range o.Order {
+			id := strconv.Itoa(v.DrinkID)
+
+			drink, err := h.db.RetrieveDrink(id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if drink == nil {
+				apiResponse(w, 404, lib.ErrDrinkNotFound)
+				return
+			}
+
+			drinkOrder := &db.DrinkOrder{
+				DrinkID: drink.ID,
+				Name:    drink.Name,
+				Price:   drink.Price,
+				Comment: v.Comment,
+			}
+			drinks = append(drinks, *drinkOrder)
+		}
+
+		order := &db.FullOrder{
+			Person: *p,
+			Drinks: drinks,
+		}
+
+		resOrder, err := h.db.CreateOrder(order)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		apiResponse(w, 200, resOrder)
 	}
 }
 
@@ -160,14 +322,15 @@ func (h *Handler) RemoveOrder() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// order := vars["order_number"]
-		// remove from db
-	}
-}
+		orderNumber := vars["order_number"]
 
-func (h *Handler) RetrieveQueue() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+		err := h.db.RemoveOrder(orderNumber)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
+		apiResponse(w, http.StatusGone, http.StatusText(410))
 	}
 }
 
@@ -178,7 +341,23 @@ func (h *Handler) RetrieveOrders() http.HandlerFunc {
 			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
 			return
 		}
-		// person := vars["person_id"]
-		// retrieve all orders by person
+		personID := vars["person_id"]
+
+		orders, err := h.db.RetrieveOrders(personID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if orders == nil {
+			apiResponse(w, http.StatusNotFound, http.StatusText(404))
+		}
+
+		apiResponse(w, 200, orders)
+	}
+}
+
+func (h *Handler) RetrieveQueue() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
 	}
 }

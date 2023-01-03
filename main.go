@@ -47,11 +47,11 @@ func main() {
 
 	s.router.HandleFunc("/drinks", h.RetrieveDrinks()).Methods("GET")
 	s.router.HandleFunc("/drink", h.CreateDrink()).Methods("POST")
-	s.router.HandleFunc("/drink/{name}", h.RetrieveDrink()).Methods("GET")
-	s.router.HandleFunc("/drink/{name}", h.UpdateDrink()).Methods("PATCH")
-	s.router.HandleFunc("/drink/{name}", h.RemoveDrink()).Methods("DELETE")
+	s.router.HandleFunc("/drink/{id}", h.RetrieveDrink()).Methods("GET")
+	s.router.HandleFunc("/drink/{id}", h.UpdateDrink()).Methods("PATCH")
+	s.router.HandleFunc("/drink/{id}", h.RemoveDrink()).Methods("DELETE")
 
-	s.router.HandleFunc("/order", h.CreateOrder()).Methods("POST")
+	s.router.HandleFunc("/order/{person_id}", h.CreateOrder()).Methods("POST")
 	s.router.HandleFunc("/order/{order_number}", h.RemoveOrder()).Methods("DELETE")
 
 	s.router.HandleFunc("/orders/{person_id}", h.RetrieveOrders()).Methods("GET")

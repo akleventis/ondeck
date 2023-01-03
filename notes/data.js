@@ -47,7 +47,7 @@ const queueResponse = {
   },
 };
 
-// POST /order
+// POST /order/{person_id}
 const orderResponse = {
   person: {
     id: 123,
@@ -58,10 +58,12 @@ const orderResponse = {
     {
       name: "Gin and Tonic",
       price: 10,
+      comment: "hold the tonic"
     },
     {
       name: "Taquila Soda",
       price: 10,
+      comment: "double, hold the soda"
     },
   ],
   order_number: 2,
@@ -79,10 +81,12 @@ const personOrderResponse = [
       {
         name: "Gin and Tonic",
         price: 10,
+        comment: "hold the tonic"
       },
       {
         name: "Taquila Soda",
         price: 10,
+        comment: "double, hold the soda"
       },
     ],
     order_number: 2,
@@ -97,52 +101,14 @@ const personOrderResponse = [
       {
         name: "Michelob",
         price: 4,
+        comment: ""
       },
       {
         name: "Gin and Tonic",
         price: 10,
+        comment: "hold the tonic"
       },
     ],
     order_number: 5,
   },
 ];
-
-// --------------------------- //
-
-// Since we really only care about the queue, this call seems unnecessary
-// GET /orders
-// const ordersResponse = [
-//   {
-//     person: {
-//       name: "Tanner",
-//       phone: "1111111111",
-//     },
-//     drink: {
-//       name: "Gin and Tonic",
-//       price: 10,
-//     },
-//     order_number: 1,
-//   },
-//   {
-//     person: {
-//       name: "Toop",
-//       phone: "8888888888",
-//     },
-//     drink: {
-//       name: "Taquila Soda",
-//       price: 10,
-//     },
-//     order_number: 5,
-//   },
-//   {
-//     person: {
-//       name: "Ryan",
-//       phone: "9999999999",
-//     },
-//     drink: {
-//       name: "Taquila Soda",
-//       price: 10,
-//     },
-//     order_number: 3,
-//   },
-// ];

@@ -76,7 +76,8 @@ func (db *DB) createPersonsTable() error {
 //  price  | integer               |           |          |
 func (db *DB) createDrinksTable() error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS drinks_t (
-		name varchar(50) primary key,
+		id serial primary key,
+		name varchar(50),
 		price integer
 	  )`); err != nil {
 		return err
