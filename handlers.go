@@ -316,6 +316,7 @@ func (h *Handler) CreateOrder() http.HandlerFunc {
 		order := &db.FullOrder{
 			Person: *p,
 			Drinks: drinks,
+			Done:   false,
 		}
 
 		resOrder, err := h.db.CreateOrder(order)
@@ -366,6 +367,22 @@ func (h *Handler) RetrieveOrders() http.HandlerFunc {
 		}
 
 		apiResponse(w, http.StatusOK, orders)
+	}
+}
+
+func (h *Handler) CompleteOrder() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		if vars == nil {
+			http.Error(w, lib.ErrInvalidID.Error(), http.StatusBadRequest)
+			return
+		}
+		pID := vars["order_number"]
+
+		if err := h.db.CompleteOrder(pID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

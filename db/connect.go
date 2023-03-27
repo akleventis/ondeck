@@ -69,10 +69,11 @@ func (db *DB) createPersonsTable() error {
 }
 
 // ondeck=# \d drinks_t;
-//  Table "public.drinks_t"
-//  Column |         Type          | Collation | Nullable | Default
-// --------+-----------------------+-----------+----------+---------
-//  name   | character varying(50) |           | not null |
+// Table "public.drinks_t"
+// Column |         Type          | Collation | Nullable |               Default
+// --------+-----------------------+-----------+----------+--------------------------------------
+//  id     | integer               |           | not null | nextval('drinks_t_id_seq'::regclass)
+//  name   | character varying(50) |           |          |
 //  price  | integer               |           |          |
 func (db *DB) createDrinksTable() error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS drinks_t (
@@ -89,9 +90,10 @@ func (db *DB) createDrinksTable() error {
 // Table "public.orders_t"
 // Column    |  Type   | Collation | Nullable |                    Default
 // --------------+---------+-----------+----------+------------------------------------------------
-// order_number | integer |           | not null | nextval('orders_t_order_number_seq'::regclass)
-// person_id    | integer |           |          |
-// drinks       | json    |           |          |
+//  order_number | integer |           | not null | nextval('orders_t_order_number_seq'::regclass)
+//  person_id    | integer |           |          |
+//  drinks       | json    |           |          |
+//  done         | boolean |           |          |
 // Indexes:
 // "orders_t_pkey" PRIMARY KEY, btree (order_number)
 // Foreign-key constraints:
@@ -100,7 +102,8 @@ func (db *DB) createOrdersTable() error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS orders_t (
 		order_number serial primary key,
 		person_id integer references persons_t(id),
-		drinks json
+		drinks json,
+		done boolean
 	  )`); err != nil {
 		return err
 	}

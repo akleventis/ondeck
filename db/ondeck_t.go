@@ -29,22 +29,18 @@ type DrinkOrder struct {
 type Drinks []DrinkOrder
 
 type Order struct {
-	Order Drinks `json:"order"`
+	Order []DrinkOrder `json:"order"`
 }
 
 type FullOrder struct {
-	Person      Person `json:"person"`
-	Drinks      Drinks `json:"drinks"`
-	OrderNumber int    `json:"order_number"`
+	Person      Person       `json:"person"`
+	Drinks      []DrinkOrder `json:"drinks"`
+	OrderNumber int          `json:"order_number"`
+	Done        bool         `json:"complete"`
 }
 
-type QueueObject struct {
-	Person      Person `json:"person"`
-	Drinks      Drinks `json:"drinks"`
-	OrderNumber int    `json:"order_number"`
-}
 type QueueResponse struct {
-	Queue map[int]QueueObject `json:"queue"`
+	Queue map[int]FullOrder `json:"queue"`
 }
 
 // Person
@@ -170,14 +166,14 @@ func (db *DB) RemoveDrink(id string) error {
 
 // Order
 func (db *DB) CreateOrder(order *FullOrder) (*FullOrder, error) {
-	query := `INSERT INTO orders_t (person_id, drinks) VALUES ($1, $2) RETURNING order_number;`
+	query := `INSERT INTO orders_t (person_id, drinks, done) VALUES ($1, $2, $3) RETURNING order_number;`
 
 	jsonDrinks, err := json.Marshal(order.Drinks)
 	if err != nil {
 		return nil, err
 	}
 
-	err = db.QueryRow(query, order.Person.ID, jsonDrinks).Scan(&order.OrderNumber)
+	err = db.QueryRow(query, order.Person.ID, jsonDrinks, false).Scan(&order.OrderNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -193,10 +189,18 @@ func (db *DB) RemoveOrder(orderNumber string) error {
 	return nil
 }
 
+func (db *DB) CompleteOrder(orderNumber string) error {
+	query := `UPDATE orders_t SET done=true WHERE order_number=$1;`
+	if _, err := db.Exec(query, orderNumber); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Orders
 func (db *DB) RetrieveOrders(personID string) ([]FullOrder, error) {
 	orders := make([]FullOrder, 0)
-	query := `SELECT order_number, person_id, drinks from orders_t WHERE person_id=$1;`
+	query := `SELECT order_number, person_id, drinks, done from orders_t WHERE person_id=$1;`
 	rows, err := db.Query(query, personID)
 	if err != nil {
 		return nil, err
@@ -204,7 +208,7 @@ func (db *DB) RetrieveOrders(personID string) ([]FullOrder, error) {
 	defer rows.Close()
 	for rows.Next() {
 		order := FullOrder{}
-		if err := rows.Scan(&order.OrderNumber, &order.Person.ID, &order.Drinks); err != nil {
+		if err := rows.Scan(&order.OrderNumber, &order.Person.ID, &order.Drinks, &order.Done); err != nil {
 			return nil, err
 		}
 
@@ -227,17 +231,17 @@ func (db *DB) RetrieveOrders(personID string) ([]FullOrder, error) {
 // Queue
 func (db *DB) RetrieveQueue() (*QueueResponse, error) {
 	var queueResp QueueResponse
-	queue := make(map[int]QueueObject, 0)
-	query := `SELECT order_number, person_id, drinks from orders_t;`
+	queue := make(map[int]FullOrder, 0)
+	query := `SELECT order_number, person_id, drinks, done from orders_t;`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		q := QueueObject{}
+		q := FullOrder{}
 		var orderNumber int
-		if err := rows.Scan(&orderNumber, &q.Person.ID, &q.Drinks); err != nil {
+		if err := rows.Scan(&orderNumber, &q.Person.ID, &q.Drinks, &q.Done); err != nil {
 			return nil, err
 		}
 		personID := strconv.Itoa(q.Person.ID)
