@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/akleventis/on-deck/db"
+	"github.com/akleventis/ondeck/server/db"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"

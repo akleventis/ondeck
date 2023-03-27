@@ -1,4 +1,4 @@
-module github.com/akleventis/on-deck/server
+module github.com/akleventis/ondeck/server
 
 go 1.18
 
@@ -12,4 +12,4 @@ require (
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 )
 
-replace github.com/akleventis/on-deck/server => ./server
+replace github.com/akleventis/ondeck/server => ./server

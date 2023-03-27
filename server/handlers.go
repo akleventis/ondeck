@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/akleventis/on-deck/db"
-	"github.com/akleventis/on-deck/lib"
+	"github.com/akleventis/ondeck/server/db"
+	"github.com/akleventis/ondeck/server/lib"
 	"github.com/gorilla/mux"
 )
 
